@@ -247,6 +247,7 @@ export class JobService {
         if (asset && asset.isVisible) {
           this.communicationRepository.send(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
+        break;
       }
 
       case JobName.FACE_DETECTION: {
