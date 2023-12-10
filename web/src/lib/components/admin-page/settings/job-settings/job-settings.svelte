@@ -23,7 +23,7 @@
     JobName.Library,
     JobName.Sidecar,
     JobName.SmartSearch,
-    JobName.RecognizeFaces,
+    JobName.FaceDetection,
     JobName.VideoConversion,
     JobName.Migration,
   ];
