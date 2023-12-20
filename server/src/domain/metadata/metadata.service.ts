@@ -462,6 +462,7 @@ export class MetadataService {
       latitude: validate(tags.GPSLatitude),
       lensModel: tags.LensModel ?? null,
       livePhotoCID: (tags.ContentIdentifier || tags.MediaGroupUUID) ?? null,
+      autoStackId: this.getAutoStackId(tags),
       longitude: validate(tags.GPSLongitude),
       make: tags.Make ?? null,
       model: tags.Model ?? null,
@@ -479,6 +480,13 @@ export class MetadataService {
     }
 
     return { exifData, tags };
+  }
+
+  private getAutoStackId(tags: ImmichTags | null): string | null {
+    if (!tags) {
+      return null;
+    }
+    return tags.BurstID ?? tags.BurstUUID ?? tags.CameraBurstID ?? tags.MediaUniqueID ?? null;
   }
 
   private getDateTimeOriginal(tags: ImmichTags | Tags | null) {
