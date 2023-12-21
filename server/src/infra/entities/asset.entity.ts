@@ -1,3 +1,4 @@
+import { AssetStackEntity } from '@app/infra/entities/asset-stack.entity';
 import {
   Column,
   CreateDateColumn,
@@ -156,14 +157,10 @@ export class AssetEntity {
   faces!: AssetFaceEntity[];
 
   @Column({ nullable: true })
-  stackParentId?: string | null;
+  stackId?: string | null;
 
-  @ManyToOne(() => AssetEntity, (asset) => asset.stack, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
-  @JoinColumn({ name: 'stackParentId' })
-  stackParent?: AssetEntity | null;
-
-  @OneToMany(() => AssetEntity, (asset) => asset.stackParent)
-  stack?: AssetEntity[];
+  @ManyToOne(() => AssetStackEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
+  stack?: AssetStackEntity;
 
   @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
   jobStatus?: AssetJobStatusEntity;
