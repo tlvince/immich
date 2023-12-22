@@ -1,17 +1,14 @@
 # Hardware Transcoding [Experimental]
 
-This feature allows you to use a GPU or Intel Quick Sync to accelerate transcoding and reduce CPU load.
+This feature allows you to use a GPU to accelerate transcoding and reduce CPU load.
 Note that hardware transcoding is much less efficient for file sizes.
 As this is a new feature, it is still experimental and may not work on all systems.
 
 ## Supported APIs
 
-- NVENC
-  - NVIDIA GPUs
-- Quick Sync
-  - Intel CPUs
-- VAAPI
-  - GPUs
+- NVENC (NVIDIA)
+- Quick Sync (Intel)
+- VAAPI (AMD / NVIDIA / Intel)
 
 ## Limitations
 
@@ -20,8 +17,7 @@ As this is a new feature, it is still experimental and may not work on all syste
 - WSL2 does not support Quick Sync.
 - Raspberry Pi is currently not supported.
 - Two-pass mode is only supported for NVENC. Other APIs will ignore this setting.
-- Only encoding is currently hardware accelerated, so the CPU is still used for software decoding.
-  - This is mainly because the original video may not be hardware-decodable.
+- Only encoding is currently hardware accelerated, so the CPU is still used for software decoding and tone-mapping.
 - Hardware dependent
   - Codec support varies, but H.264 and HEVC are usually supported.
     - Notably, NVIDIA and AMD GPUs do not support VP9 encoding.
@@ -43,18 +39,18 @@ As this is a new feature, it is still experimental and may not work on all syste
 
 ## Setup
 
-1. If you do not already have it, download the latest [`hwaccel.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
-2. Uncomment the lines that apply to your system and desired usage.
-3. In the `docker-compose.yml` under `immich-microservices`, uncomment the lines relating to the `hwaccel.yml` file.
-4. Redeploy the `immich-microservices` container with these updated settings.
-5. In the Admin page under `FFmpeg settings`, change the hardware acceleration setting to the appropriate option and save.
+1. If you do not already have it, download the latest [`hwaccel.transcoding.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
+2. In the `docker-compose.yml` under `immich-microservices`, uncomment the `extends` section and change `cpu` to the appropriate backend.
+  - For VAAPI on WSL2, be sure to use `vaapi-wsl` rather than `vaapi`
+3. Redeploy the `immich-microservices` container with these updated settings.
+4. In the Admin page under `Video transcoding settings`, change the hardware acceleration setting to the appropriate option and save.
 
 ## Tips
 
 - You may want to choose a slower preset than for software transcoding to maintain quality and efficiency
-- While you can use VAAPI with Nvidia GPUs and Intel CPUs, prefer the more specific APIs since they're more optimized for their respective devices
+- While you can use VAAPI with Nvidia and Intel devices, prefer the more specific APIs since they're more optimized for their respective devices
 
-[hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.yml
+[hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.transcoding.yml
 [nvcr]: https://github.com/NVIDIA/nvidia-container-runtime/
 [jellyfin-lp]: https://jellyfin.org/docs/general/administration/hardware-acceleration/intel/#configure-and-verify-lp-mode-on-linux
 [jellyfin-kernel-bug]: https://jellyfin.org/docs/general/administration/hardware-acceleration/intel/#known-issues-and-limitations
