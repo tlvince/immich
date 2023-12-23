@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import Enum
 from typing import Any, Protocol, TypeAlias, TypedDict, TypeGuard
 
 import numpy as np
@@ -24,7 +24,7 @@ class BoundingBox(TypedDict):
     y2: int
 
 
-class ModelType(StrEnum):
+class ModelType(str, Enum):
     CLIP = "clip"
     FACIAL_RECOGNITION = "facial-recognition"
 
