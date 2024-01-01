@@ -37,8 +37,8 @@ export const load = (async ({ params }) => {
       };
     }
 
-    throw error(404, {
-      message: 'Invalid shared link',
-    });
+    error(404, {
+            message: 'Invalid shared link',
+          });
   }
 }) satisfies PageLoad;
