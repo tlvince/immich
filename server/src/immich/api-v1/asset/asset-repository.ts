@@ -24,7 +24,6 @@ export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(asset: AssetCreate): Promise<AssetEntity>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
-  getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
@@ -160,27 +159,6 @@ export class AssetRepository implements IAssetRepository {
 
   create(asset: AssetCreate): Promise<AssetEntity> {
     return this.assetRepository.save(asset);
-  }
-
-  /**
-   * Get assets by device's Id on the database
-   * @param ownerId
-   * @param deviceId
-   *
-   * @returns Promise<string[]> - Array of assetIds belong to the device
-   */
-  async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
-    const items = await this.assetRepository.find({
-      select: { deviceAssetId: true },
-      where: {
-        ownerId,
-        deviceId,
-        isVisible: true,
-      },
-      withDeleted: true,
-    });
-
-    return items.map((asset) => asset.deviceAssetId);
   }
 
   /**
