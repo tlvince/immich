@@ -35,7 +35,7 @@ export class JobRepository implements IJobRepository {
   }
 
   addCronJob(name: string, expression: string, onTick: () => void, start = true): void {
-    const job = new CronJob<null, null>(
+    const job = new CronJob(
       expression,
       onTick,
       // function to run onComplete
@@ -141,7 +141,12 @@ export class JobRepository implements IJobRepository {
   }
 
   async queue(item: JobItem): Promise<void> {
-    await this.queueAll([item]);
+    const jobName = item.name;
+    const jobData = item.data ?? {};
+    const jobOptions = this.getJobOptions(item) || undefined;
+
+    // need to use add() instead of addBulk() for jobId deduplication
+    await this.getQueue(JOBS_TO_QUEUE[jobName]).add(jobName, jobData, jobOptions);
   }
 
   async waitForQueueCompletion(name: QueueName): Promise<void> {
