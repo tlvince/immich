@@ -1,3 +1,4 @@
+import { PersonEntity } from '@app/infra/entities';
 import { PersonPathType } from '@app/infra/entities/move.entity';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
@@ -43,7 +44,6 @@ import {
   mapFaces,
   mapPerson,
 } from './person.dto';
-import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 
 @Injectable()
 export class PersonService {
@@ -252,7 +252,7 @@ export class PersonService {
   }
 
   private async delete(people: PersonEntity[]) {
-    await Promise.all(people.map(person => this.storageRepository.unlink(person.thumbnailPath)));
+    await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
     await this.repository.delete(people);
     this.logger.debug(`Deleted ${people.length} people`);
   }
@@ -362,16 +362,13 @@ export class PersonService {
     }
 
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAllFaces(pagination, { where: force ? undefined :  { personId: IsNull() } }),
+      this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull() } }),
     );
 
     for await (const page of facePagination) {
-      for (const { id } of page) {
-        await this.jobRepository.queue({
-          name: JobName.FACIAL_RECOGNITION,
-          data: { id },
-        });
-      }
+      await this.jobRepository.queueAll(
+        page.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id } })),
+      );
     }
 
     return true;
@@ -392,7 +389,7 @@ export class PersonService {
     // typeorm leaves the embedding as a string
     const embedding: Embedding = typeof face.embedding === 'string' ? JSON.parse(face.embedding) : face.embedding;
     const matches = await this.smartInfoRepository.searchFaces({
-      ownerId: face.asset.ownerId,
+      userIds: [face.asset.ownerId],
       embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: 100,

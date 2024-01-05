@@ -57,8 +57,8 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .andWhere('a.fileCreatedAt < NOW()')
         .leftJoinAndSelect('a.exifInfo', 'e')
         .orderBy('s.embedding <=> :embedding')
-        .setParameters({ userIds, embedding: asVector(embedding) })
-      
+        .setParameters({ userIds, embedding: asVector(embedding) });
+
       if (numResults) {
         if (!isValidInteger(numResults, { min: 1 })) {
           throw new Error(`Invalid value for 'numResults': ${numResults}`);
