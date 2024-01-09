@@ -1,19 +1,19 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 
 @Entity('asset_stack')
 export class AssetStackEntity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @OneToMany(() => AssetEntity, (asset) => asset.stack)
-  @JoinColumn()
-  asset!: AssetEntity;
-
-  @Column()
-  assetId!: string;
+  assets!: AssetEntity[];
 
   @OneToOne(() => AssetEntity)
   @JoinColumn()
-  parent!: AssetEntity;
+  //TODO: Add constraint to ensure primary asset exists in the assets array
+  primaryAsset!: AssetEntity;
+
+  @Column({ nullable: false })
+  primaryAssetId!: string;
 }

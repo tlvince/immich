@@ -35,7 +35,6 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
 @Index('IDX_day_of_month', { synchronize: false })
 @Index('IDX_month', { synchronize: false })
 @Index('IDX_originalPath_libraryId', ['originalPath', 'libraryId'])
-@Index(['stackParentId'])
 // For all assets, each originalpath must be unique per user and library
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -159,8 +158,9 @@ export class AssetEntity {
   @Column({ nullable: true })
   stackId?: string | null;
 
-  @ManyToOne(() => AssetStackEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  stack?: AssetStackEntity;
+  @ManyToOne(() => AssetStackEntity, { nullable: true, eager: true })
+  @JoinColumn()
+  stack?: AssetStackEntity | null;
 
   @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
   jobStatus?: AssetJobStatusEntity;

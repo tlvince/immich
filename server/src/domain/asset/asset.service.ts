@@ -1,5 +1,7 @@
+import { IAssetStackRepository } from '@app/domain/repositories/asset-stack.repository';
 import { AssetEntity, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
+import { AssetStackRepository } from '@app/infra/repositories/asset-stack.repository';
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
@@ -91,6 +93,7 @@ export class AssetService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
+    @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
@@ -412,24 +415,46 @@ export class AssetService {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, ids);
 
     if (removeParent) {
-      (options as Partial<AssetEntity>).stackParentId = null;
+      (options as Partial<AssetEntity>).stack = null;
       const assets = await this.assetRepository.getByIds(ids);
       // This updates the updatedAt column of the parents to indicate that one of its children is removed
       // All the unique parent's -> parent is set to null
-      ids.push(...new Set(assets.filter((a) => !!a.stackParentId).map((a) => a.stackParentId!)));
+      ids.push(...new Set(assets.filter((a) => !!a.stack?.primaryAssetId).map((a) => a.stack!.primaryAssetId!)));
     } else if (options.stackParentId) {
+      //Creating new stack if parent doesn't have one already. If it does, then we add to the existing stack
       await this.access.requirePermission(auth, Permission.ASSET_UPDATE, options.stackParentId);
-      // Merge stacks
+      const primaryAsset = await this.assetRepository.getById(options.stackParentId);
+      if (!primaryAsset) {
+        throw new Error('Asset not found');
+      }
+      let stack = primaryAsset.stack;
+
       const assets = await this.assetRepository.getByIds(ids);
-      const assetsWithChildren = assets.filter((a) => a.stack && a.stack.length > 0);
-      ids.push(...assetsWithChildren.flatMap((child) => child.stack!.map((gChild) => gChild.id)));
+      const assetsWithChildren = assets.filter((a) => a.stack && a.stack.assets.length > 0);
+      ids.push(...assetsWithChildren.flatMap((child) => child.stack!.assets.map((gChild) => gChild.id)));
+      ids.push(options.stackParentId);
 
-      // This updates the updatedAt column of the parent to indicate that a new child has been added
-      await this.assetRepository.updateAll([options.stackParentId], { stackParentId: null });
-    }
+      if (!stack) {
+        stack = await this.assetStackRepository.create({
+          primaryAsset,
+          assets: ids.map((id) => {
+            return { id } as AssetEntity;
+          }),
+        });
+      } else {
+        await this.assetStackRepository.save({
+          id: stack.id,
+          primaryAsset,
+          assets: ids.map((id) => {
+            return { id } as AssetEntity;
+          }),
+        });
+      }
 
-    for (const id of ids) {
-      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
+      // Merge stacks
+      options.stackParentId = undefined;
+      // @ts-expect-error Temporary hack while we aren't updating stacks directly with their own api calls
+      options.updatedAt = new Date();
     }
 
     for (const id of ids) {
@@ -473,11 +498,17 @@ export class AssetService {
     }
 
     // Replace the parent of the stack children with a new asset
-    if (asset.stack && asset.stack.length != 0) {
-      const stackIds = asset.stack.map((a) => a.id);
-      const newParentId = stackIds[0];
-      await this.assetRepository.updateAll(stackIds.slice(1), { stackParentId: newParentId });
-      await this.assetRepository.updateAll([newParentId], { stackParentId: null });
+    if (asset.stack?.primaryAsset.id === id) {
+      const stackIds = asset.stack.assets.map((a) => a.id);
+      if (stackIds.length > 2) {
+        const primaryAssetId = stackIds[0];
+        await this.assetStackRepository.save({
+          id: asset.stack.id,
+          primaryAssetId,
+        });
+      } else {
+        await this.assetStackRepository.delete(asset.stack.id);
+      }
     }
 
     await this.assetRepository.remove(asset);
@@ -551,16 +582,21 @@ export class AssetService {
 
     const childIds: string[] = [];
     const oldParent = await this.assetRepository.getById(oldParentId);
+    if (!oldParent || !oldParent.stackId) {
+      throw new Error('Asset not found or not in a stack');
+    }
     if (oldParent != null) {
       childIds.push(oldParent.id);
       // Get all children of old parent
-      childIds.push(...(oldParent.stack?.map((a) => a.id) ?? []));
+      childIds.push(...(oldParent.stack?.assets.map((a) => a.id) ?? []));
     }
+    await this.assetStackRepository.save({
+      id: oldParent.stackId,
+      primaryAssetId: newParentId,
+    });
 
-    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId]);
-    await this.assetRepository.updateAll(childIds, { stackParentId: newParentId });
-    // Remove ParentId of new parent if this was previously a child of some other asset
-    return this.assetRepository.updateAll([newParentId], { stackParentId: null });
+    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId, oldParentId]);
+    await this.assetRepository.updateAll([oldParentId, newParentId, ...childIds], { updatedAt: new Date() });
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
