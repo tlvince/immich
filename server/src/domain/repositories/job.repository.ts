@@ -111,5 +111,5 @@ export interface IJobRepository {
   clear(name: QueueName, type: QueueCleanType): Promise<string[]>;
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
-  waitForQueueCompletion(name: QueueName): Promise<void>;
+  waitForQueueCompletion(...queues: QueueName[]): Promise<void>;
 }

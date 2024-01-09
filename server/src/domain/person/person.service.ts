@@ -353,8 +353,7 @@ export class PersonService {
       return true;
     }
 
-    // TODO: handle paused jobs
-    await this.jobRepository.waitForQueueCompletion(QueueName.FACE_DETECTION);
+    await this.jobRepository.waitForQueueCompletion(QueueName.THUMBNAIL_GENERATION, QueueName.FACE_DETECTION);
 
     if (force) {
       const people = await this.repository.getAll();
@@ -400,7 +399,7 @@ export class PersonService {
     let personId = matches.find((match) => match.face.personId)?.face.personId; // `matches` also includes the face itself
     let faceIds = [id];
 
-    const isCore = matches.length >= machineLearning.facialRecognition.minFaces + 1;
+    const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
     if (isCore) {
       if (!personId) {
         this.logger.log(`Creating new person for face ${id}`);

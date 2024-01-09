@@ -149,13 +149,15 @@ export class JobRepository implements IJobRepository {
     await this.getQueue(JOBS_TO_QUEUE[jobName]).add(jobName, jobData, jobOptions);
   }
 
-  async waitForQueueCompletion(name: QueueName): Promise<void> {
-    let { isActive } = await this.getQueueStatus(name);
-    while (isActive) {
-      this.logger.verbose(`Waiting for ${name} queue to stop...`);
-      await setTimeout(1000).then(async () => {
-        ({ isActive } = await this.getQueueStatus(name));
-      });
+  async waitForQueueCompletion(...queues: QueueName[]): Promise<void> {
+    let activeQueue: QueueStatus | undefined;
+    do {
+      const statuses = await Promise.all(queues.map((name) => this.getQueueStatus(name)));
+      activeQueue = statuses.find((status) => status.isActive);
+    } while (activeQueue);
+    {
+      this.logger.verbose(`Waiting for ${activeQueue} queue to stop...`);
+      await setTimeout(1000);
     }
   }
 
