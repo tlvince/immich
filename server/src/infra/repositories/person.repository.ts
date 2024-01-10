@@ -229,8 +229,4 @@ export class PersonRepository implements IPersonRepository {
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOneBy({ personId });
   }
-
-  async getFaceCount(): Promise<number> {
-    return this.assetFaceRepository.count();
-  }
 }
