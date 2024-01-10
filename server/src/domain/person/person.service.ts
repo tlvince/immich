@@ -404,7 +404,7 @@ export class PersonService {
     const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
     if (!isCore && !deferred) {
       this.logger.debug(`Deferring non-core face ${id} for later processing`);
-      this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });
+      await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });
       return true;
     }
 
@@ -424,10 +424,10 @@ export class PersonService {
     }
 
     if (isCore && !personId) {
-        this.logger.log(`Creating new person for face ${id}`);
-        const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
-        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
-        personId = newPerson.id;
+      this.logger.log(`Creating new person for face ${id}`);
+      const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
+      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+      personId = newPerson.id;
     }
 
     if (personId) {

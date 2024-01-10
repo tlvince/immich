@@ -8446,13 +8446,15 @@
             "type": "boolean"
           },
           "maxDistance": {
-            "type": "float"
+            "format": "float",
+            "type": "number"
           },
           "minFaces": {
             "type": "integer"
           },
           "minScore": {
-            "type": "float"
+            "format": "float",
+            "type": "number"
           },
           "modelName": {
             "type": "string"
