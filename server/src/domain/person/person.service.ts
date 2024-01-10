@@ -365,7 +365,7 @@ export class PersonService {
     await this.jobRepository.waitForQueueCompletion(QueueName.THUMBNAIL_GENERATION, QueueName.FACE_DETECTION);
 
     if (force) {
-      this.deleteAllPeople();
+      await this.deleteAllPeople();
     }
 
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
