@@ -5,7 +5,7 @@ import signal
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Awaitable, Callable, Iterator
+from typing import Any, Callable, Iterator
 from zipfile import BadZipFile
 
 import orjson

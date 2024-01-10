@@ -8,7 +8,7 @@ from insightface.model_zoo import ArcFaceONNX, RetinaFace
 from insightface.utils.face_align import norm_crop
 
 from app.config import clean_name
-from app.schemas import BoundingBox, Face, ModelType, ndarray_f32
+from app.schemas import Face, ModelType, ndarray_f32
 
 from .base import InferenceModel
 
