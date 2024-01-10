@@ -373,7 +373,6 @@ export class PersonService {
     );
 
     for await (const page of facePagination) {
-      this.logger.log(`Queueing ${page.length} faces for recognition`)
       await this.jobRepository.queueAll(
         page.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id, deferred: false } })),
       );

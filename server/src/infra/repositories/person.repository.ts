@@ -51,7 +51,10 @@ export class PersonRepository implements IPersonRepository {
     await this.assetFaceRepository.delete({});
   }
 
-  getAllFaces(pagination: PaginationOptions, options: FindManyOptions<AssetFaceEntity> = {}): Paginated<AssetFaceEntity> {
+  getAllFaces(
+    pagination: PaginationOptions,
+    options: FindManyOptions<AssetFaceEntity> = {},
+  ): Paginated<AssetFaceEntity> {
     return paginate(this.assetFaceRepository, pagination, options);
   }
 
