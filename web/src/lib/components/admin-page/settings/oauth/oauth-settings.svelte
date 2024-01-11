@@ -200,7 +200,7 @@
 
         <SettingSwitch
           title="MOBILE REDIRECT URI OVERRIDE"
-          subtitle="Enable when `app.immich:/` is an invalid redirect URI."
+          subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
           disabled={disabled || !oauthConfig.enabled}
           on:click={() => handleToggleOverride()}
           bind:checked={oauthConfig.mobileOverrideEnabled}
