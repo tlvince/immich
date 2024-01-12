@@ -90,7 +90,7 @@
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
       title: api.getJobName(JobName.FaceDetection),
-      subtitle: 'Detects the faces in your assets',
+      subtitle: 'Detect the faces in your assets',
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
