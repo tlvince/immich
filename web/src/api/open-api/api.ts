@@ -3774,12 +3774,6 @@ export interface SystemConfigJobDto {
      * @type {JobSettingsDto}
      * @memberof SystemConfigJobDto
      */
-    'facialRecognition': JobSettingsDto;
-    /**
-     * 
-     * @type {JobSettingsDto}
-     * @memberof SystemConfigJobDto
-     */
     'library': JobSettingsDto;
     /**
      * 
