@@ -115,7 +115,7 @@
                 inputType={SettingInputFieldType.NUMBER}
                 label="{api.getJobName(jobName)} Concurrency"
                 desc=""
-                value=1
+                value="1"
                 disabled={true}
                 title="This job is not concurrency-safe."
               />
