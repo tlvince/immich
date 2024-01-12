@@ -387,7 +387,11 @@ export class PersonService {
       return true;
     }
 
-    const face = await this.repository.getFaceByIdWithAssets(id);
+    const face = await this.repository.getFaceByIdWithAssets(
+      id,
+      { person: true, asset: true },
+      { id: true, personId: true, embedding: true },
+    );
     if (!face) {
       this.logger.warn(`Face ${id} not found`);
       return false;
@@ -399,10 +403,9 @@ export class PersonService {
     }
 
     // typeorm leaves the embedding as a string
-    const embedding: Embedding = typeof face.embedding === 'string' ? JSON.parse(face.embedding) : face.embedding;
     const matches = await this.smartInfoRepository.searchFaces({
       userIds: [face.asset.ownerId],
-      embedding,
+      embedding: face.embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: machineLearning.facialRecognition.minFaces,
     });
@@ -420,7 +423,7 @@ export class PersonService {
     if (!personId) {
       const matchWithPerson = await this.smartInfoRepository.searchFaces({
         userIds: [face.asset.ownerId],
-        embedding,
+        embedding: face.embedding,
         maxDistance: machineLearning.facialRecognition.maxDistance,
         numResults: 1,
         hasPerson: true,
