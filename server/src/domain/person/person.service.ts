@@ -12,7 +12,6 @@ import { IBaseJob, IDeferrableJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobNa
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
   CropOptions,
-  Embedding,
   IAccessRepository,
   IAssetRepository,
   ICryptoRepository,
