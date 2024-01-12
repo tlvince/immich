@@ -24,7 +24,9 @@
     JobName.Sidecar,
     JobName.SmartSearch,
     JobName.FaceDetection,
+    JobName.FacialRecognition,
     JobName.VideoConversion,
+    JobName.StorageTemplateMigration,
     JobName.Migration,
   ];
 
@@ -86,6 +88,10 @@
       type: NotificationType.Info,
     });
   }
+
+  function isSystemConfigJobDto(jobName: JobName): jobName is keyof SystemConfigJobDto {
+    return jobName in jobConfig;
+  }
 </script>
 
 <div>
@@ -94,15 +100,26 @@
       <form autocomplete="off" on:submit|preventDefault>
         {#each jobNames as jobName}
           <div class="ml-4 mt-4 flex flex-col gap-4">
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
-              {disabled}
-              label="{api.getJobName(jobName)} Concurrency"
-              desc=""
-              bind:value={jobConfig[jobName].concurrency}
-              required={true}
-              isEdited={!(jobConfig[jobName].concurrency == savedConfig[jobName].concurrency)}
-            />
+            {#if isSystemConfigJobDto(jobName)}
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                {disabled}
+                label="{api.getJobName(jobName)} Concurrency"
+                desc=""
+                bind:value={jobConfig[jobName].concurrency}
+                required={true}
+                isEdited={!(jobConfig[jobName].concurrency == savedConfig[jobName].concurrency)}
+              />
+            {:else}
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label="{api.getJobName(jobName)} Concurrency"
+                desc=""
+                value=1
+                disabled={true}
+                title="This job is not concurrency-safe."
+              />
+            {/if}
           </div>
         {/each}
 
