@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 
-cd .isar || exit
+test -d .isar || exit
+cp .isar-cargo.lock .isar/Cargo.lock
+cd .isar
 bash tool/build_android.sh x86
 bash tool/build_android.sh x64
 bash tool/build_android.sh armv7
